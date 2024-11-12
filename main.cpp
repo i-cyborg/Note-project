@@ -5,22 +5,26 @@
 #include "Note.h"
 #include <vector>
 #include <memory>
-#include <sstream>
+#include <algorithm>
 
 int getValidInput() {
-    int scelta;
     std::string input;
+    int scelta;
 
     while (true) {
-        std::getline(std::cin, input);  // Read the entire line as a string
+        std::getline(std::cin, input);
 
-        // Use a stringstream to check if the input is an integer
-        if (std::stringstream ss(input); ss >> scelta && ss.eof()) {  // eof() checks that there are no additional characters
-            return scelta;  // Return the valid input
+        bool isValid = !input.empty() && std::all_of(input.begin(), input.end(), ::isdigit);
+
+        if (isValid) {
+            scelta = std::stoi(input);
+            break;
         } else {
             std::cout << "Input non valido. Per favore inserisci un numero intero: ";
         }
     }
+
+    return scelta;
 }
 
 int main() {
@@ -120,7 +124,6 @@ int main() {
                 }
                 std::cout << "1. Modifica titolo" << " 2. Modifica testo"<<" 3. Modifica collezione"<<" 4. Esci"<<std::endl;
                 int sceltaModifica = getValidInput();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 switch (sceltaModifica) {
                     case 1: {
                         std::cout << "Vecchio titolo: " << collections[sceltaCollezione]->getNotes(sceltaNota)->getTitle() << std::endl;
@@ -128,6 +131,7 @@ int main() {
                         std::string nuovoTitolo;
                         std::getline(std::cin, nuovoTitolo);
                         collections[sceltaCollezione]->getNotes(sceltaNota)->setTitle(nuovoTitolo);
+                        std::cout << "Titolo modificato con successo" << std::endl;
                         break;
                     }
                     case 2: {
@@ -136,6 +140,7 @@ int main() {
                         std::string nuovoTesto;
                         std::getline(std::cin, nuovoTesto);
                         collections[sceltaCollezione]->getNotes(sceltaNota)->setBody(nuovoTesto);
+                        std::cout << "Testo modificato con successo" << std::endl;
                         break;
                     }
                     case 3: {
@@ -148,12 +153,14 @@ int main() {
                             std::cout << "Collezione non valida!" << std::endl;
                             break;
                         }
-                        if(collections[modificaCollezione]->getNotes(sceltaNota)->getTitle() != collections[sceltaCollezione]->getNotes(sceltaNota)->getTitle()) {
+                        if(collections[modificaCollezione]->getNotes(sceltaNota) == nullptr && collections[modificaCollezione]->getNotes(sceltaNota)->getTitle() != collections[sceltaCollezione]->getNotes(sceltaNota)->getTitle()) {
                             collections[modificaCollezione]->addNote(collections[sceltaCollezione]->getNotes(sceltaNota));
+                            std::cout << "Nota aggiunta a collezione: " << collections[modificaCollezione]->getName() << std::endl;
+                            break;
                         } else {
                             std::cout << "Nota già presente nella collezione" << std::endl;
+                            break;
                         }
-                        break;
                     }
                     case 4: {
                         break;
@@ -197,6 +204,7 @@ int main() {
                     break;
                 }
                 collections[sceltaCollezione]->removeNote(collections[sceltaCollezione]->getNotes(sceltaNota)->getTitle());
+                std::cout << "Nota rimossa con successo" << std::endl;
                 break;
             }
             case 5: {
@@ -206,7 +214,6 @@ int main() {
                 }
                 std::cout << "Seleziona collezione: " << std::endl;
                 int sceltaCollezione = getValidInput();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 if (sceltaCollezione < 0 || sceltaCollezione >= collections.size()) {
                     std::cout << "Collezione non valida!" << std::endl;
                     break;
@@ -223,7 +230,6 @@ int main() {
                 std::cout << "Numero di note: " << noteCount << std::endl;
                 std::cout << "Seleziona nota: " << std::endl;
                 int sceltaNota = getValidInput();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 if (sceltaNota < 0 || sceltaNota >= noteCount) {
                     std::cout << "Nota non valida!" << std::endl;
                     break;
