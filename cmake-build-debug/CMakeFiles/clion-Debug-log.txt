@@ -1,4 +1,4 @@
-"D:\Program Files\JetBrains\CLion 2024.2.2\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=D:/Program Files/JetBrains/CLion 2024.2.2/bin/ninja/win/x64/ninja.exe" -G Ninja -S C:\Users\volta\CLionProjects\note -B C:\Users\volta\CLionProjects\note\cmake-build-debug
+"D:\Program Files\JetBrains\CLion 2024.2.2\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=D:/Program Files/JetBrains/CLion 2024.2.2/bin/ninja/win/x64/ninja.exe" -DCMAKE_TOOLCHAIN_FILE=C:\Users\volta\.vcpkg-clion\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic -G Ninja -S C:\Users\volta\CLionProjects\note -B C:\Users\volta\CLionProjects\note\cmake-build-debug
 -- Configuring done (1.2s)
 -- Generating done (0.0s)
 -- Build files have been written to: C:/Users/volta/CLionProjects/note/cmake-build-debug
