@@ -16,10 +16,11 @@ ConcreteObserver::~ConcreteObserver() {
 
 int ConcreteObserver::update() {
     if (subject) {
-        noteCount = subject->getNoteCount();
+        noteCount = subject->getNoteCount() + subject->getImportantNoteCount();
         showNoteCount();
         return noteCount;
     }
+    return 0;
 }
 
 void ConcreteObserver::attach() {

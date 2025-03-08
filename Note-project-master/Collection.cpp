@@ -5,11 +5,10 @@
 #include "Collection.h"
 #include "Note.h"
 #include <string>
-#include <utility>
-#include <vector>
 #include <memory>
 #include <iostream>
 #include <algorithm>
+#include <limits>
 
 Collection::Collection(const std::string& n) : name(n){
     if(name.empty()) {
@@ -17,61 +16,68 @@ Collection::Collection(const std::string& n) : name(n){
     }
 }
 
-void Collection::addNote() {
-    std::cout << "Nome della nota:";
-    std::string titolo;
-    std::getline(std::cin >> std::ws, titolo);
-    std::cout << "Testo della nota:";
-    std::string testo;
-    std::getline(std::cin >> std::ws, testo);
-    std::cout << "Vuoi bloccare la nota? 1. Si 0. No" << std::endl;
-    bool sceltaBlocco;
-    std::cin >> sceltaBlocco;
-    if(sceltaBlocco != 1 && sceltaBlocco != 0) {
-        std::cout << "Scelta non valida" << std::endl;
-        return;
+bool Collection::addNote(const std::string& titolo, const std::string& testo, bool blocco, bool importante) {
+    if(titolo.empty() || testo.empty()) {
+        std::cout << "Titolo e testo della nota non possono essere vuoti" << std::endl;
+        return false;
     }
-    std::cout << "Nota importante? 1. Si 0. No" << std::endl;
-    bool sceltaImportante;
-    std::cin >> sceltaImportante;
-    if(sceltaImportante != 1 && sceltaImportante != 0) {
-        std::cout << "Scelta non valida" << std::endl;
-        return;
+    for(const auto& note : notes) {
+        if(note->getTitle() == titolo) {
+            std::cout << "Nota con lo stesso titolo già presente" << std::endl;
+            return false;
+        }
     }
-
-    std::shared_ptr<Note> n = std::make_shared<Note>(titolo, testo, sceltaBlocco, sceltaImportante);
+    for(const auto& note : importantNotes) {
+        if(note->getTitle() == titolo) {
+            std::cout << "Nota con lo stesso titolo già presente" << std::endl;
+            return false;
+        }
+    }
+    std::shared_ptr<Note> n = std::make_shared<Note>(titolo, testo, blocco, importante);
     std::cout << "Nota creata con successo" << std::endl;
-    if(sceltaImportante) {
+    if(importante) {
         importantNotes.push_back(n);
+    }   else {
+        notes.push_back(n);
     }
-    notes.push_back(n);
-    notifyObservers();
-}
-
-bool Collection::removeNote() {
-    std::cout << "Seleziona la nota da rimuovere" << std::endl;
-    int index = 0;
-    for (const auto& note : notes) {
-        std::cout << index++ << ". " << note->getTitle() << std::endl;
-    }
-    int sceltaNota;
-    std::cin >> sceltaNota;
-    if(sceltaNota < 0 || sceltaNota >= notes.size()) {
-        std::cout << "Nota non valida" << std::endl;
-        return false;
-    }
-    auto it = std::next(notes.begin(), sceltaNota);
-    if ((*it)->getLock()) {
-        std::cout << "Nota bloccata, impossibile rimuovere" << std::endl;
-        return false;
-    }
-
-    importantNotes.remove(*it);
-    notes.erase(it);
-
-    std::cout << "Nota rimossa con successo" << std::endl;
     notifyObservers();
     return true;
+}
+
+bool Collection::removeNote(int index, bool important) {
+    if (important) {
+        if (index < 0 || index >= importantNotes.size()) {
+            std::cout << "Nota non valida" << std::endl;
+            return false;
+        }
+        auto it = std::next(importantNotes.begin(), index);
+        if ((*it)->getLock()) {
+            std::cout << "Nota bloccata, impossibile rimuovere" << std::endl;
+            return false;
+        }
+
+        importantNotes.remove(*it);
+
+        std::cout << "Nota rimossa con successo" << std::endl;
+        notifyObservers();
+        return true;
+    } else {
+        if (index < 0 || index >= notes.size()) {
+            std::cout << "Nota non valida" << std::endl;
+            return false;
+        }
+        auto it = std::next(notes.begin(), index);
+        if ((*it)->getLock()) {
+            std::cout << "Nota bloccata, impossibile rimuovere" << std::endl;
+            return false;
+        }
+
+        notes.remove(*it);
+
+        std::cout << "Nota rimossa con successo" << std::endl;
+        notifyObservers();
+        return true;
+    }
 }
 
 std::string Collection::getName() const {
@@ -102,88 +108,8 @@ void Collection::notifyObservers() {
     }
 }
 
-int Collection::getNoteCount() {
+int Collection::getNoteCount() const {
     return notes.size();
-}
-
-bool Collection::updateNote() {
-    std::cout << "Seleziona la nota da modificare" << std::endl;
-    int i = 0;
-    for (auto it = notes.begin(); it != notes.end(); ++it, ++i) {
-        std::cout << i << ". " << (*it)->getTitle() << std::endl;
-    }
-    int sceltaNota;
-    std::cin >> sceltaNota;
-    if(sceltaNota < 0 || sceltaNota >= notes.size()) {
-        std::cout << "Nota non valida" << std::endl;
-        return false;
-    }
-    auto it = notes.begin();
-    std::advance(it, sceltaNota);
-
-    if((*it)->getLock()) {
-        std::cout << "Nota bloccata, impossibile modificare" << std::endl;
-        return false;
-    }
-    std::cout << "1. Modifica titolo" << " 2. Modifica testo"<< " 3. Esci"<<std::endl;
-    int scelta;
-    std::cin >> scelta;
-    if(scelta < 1 || scelta > 3) {
-        std::cout << "Scelta non valida" << std::endl;
-        return false;
-    }
-    switch(scelta) {
-        case 1: {
-            std::cout << "Vecchio titolo: " << (*it)->getTitle() << std::endl;
-            std::cout << "Inserisci il nuovo titolo: ";
-            std::string nuovoTitolo;
-            std::getline(std::cin >> std::ws, nuovoTitolo);
-            if(nuovoTitolo.empty()) {
-                throw std::invalid_argument("Il nuovo titolo non può essere vuoto");
-            }
-            (*it)->setTitle(nuovoTitolo);
-            std::cout << "Titolo modificato con successo" << std::endl;
-            return true;
-        }
-        case 2: {
-            std::cout << "Vecchio testo: " << (*it)->getBody() << std::endl;
-            std::cout << "Inserisci il nuovo testo: ";
-            std::string nuovoTesto;
-            std::getline(std::cin >> std::ws, nuovoTesto);
-            if(nuovoTesto.empty()) {
-                throw std::invalid_argument("Il nuovo testo non può essere vuoto");
-            }
-            (*it)->setBody(nuovoTesto);
-            std::cout << "Testo modificato con successo" << std::endl;
-            return true;
-        }
-        case 3: {
-            return false;
-        }
-        default: {
-            std::cout << "Scelta non valida" << std::endl;
-            return false;
-        }
-    }
-
-}
-
-void Collection::printNotes() const {
-    std::cout << "Note importanti:" << std::endl;
-    int i = 1;
-    for (const auto& note : importantNotes) {
-        std::cout << "Nota " << i++ << ":" << std::endl;
-        std::cout << "Titolo: " << note->getTitle() << std::endl;
-        std::cout << "Testo: " << note->getBody() << std::endl << std::endl;
-    }
-    std::cout << "Note:" << std::endl;
-    i = 1;
-    for (const auto& note : notes) {
-        std::cout << "Nota " << i++ << ":" << std::endl;
-        std::cout << "Titolo: " << note->getTitle() << std::endl;
-        std::cout << "Testo: " << note->getBody() << std::endl << std::endl;
-    }
-
 }
 
 std::shared_ptr<Note> Collection::searchByTitle(const std::string &title) {
@@ -195,14 +121,9 @@ std::shared_ptr<Note> Collection::searchByTitle(const std::string &title) {
             return note;
         }
     }
-    std::cout << "Nota non trovata" << std::endl;
-    return nullptr;
-}
-
-std::shared_ptr<Note> Collection::searchByText(const std::string &text) {
-    for(const auto& note : notes) {
-        if(note->getBody() == text) {
-            std::cout << "Nota trovata nella collezione: " << name << std::endl;
+    for(const auto& note : importantNotes) {
+        if(note->getTitle() == title) {
+            std::cout << "Nota trovata" << std::endl;
             std::cout << "Titolo: " << note->getTitle() << std::endl;
             std::cout << "Testo: " << note->getBody() << std::endl;
             return note;
@@ -212,36 +133,153 @@ std::shared_ptr<Note> Collection::searchByText(const std::string &text) {
     return nullptr;
 }
 
-void Collection::addNote(const std::shared_ptr<Note> &note) {
-    if(note->getImportant()) {
-        importantNotes.push_back(note);
+std::list<std::shared_ptr<Note>> Collection::searchByText(const std::string &text) {
+    std::list<std::shared_ptr<Note>> results;
+    for (const auto& note : notes) {
+        if (note->getBody() == text) {
+            results.push_back(note);
+        }
     }
-    notes.push_back(note);
-    notifyObservers();
-}
-
-bool Collection::removeNote(const std::shared_ptr<Note>& note) {
-    if (note->getLock()) {
-        std::cout << "Nota bloccata, impossibile rimuovere" << std::endl;
-        return false;
+    for (const auto& note : importantNotes) {
+        if (note->getBody() == text) {
+            results.push_back(note);
+        }
     }
-
-    auto it = std::find(notes.begin(), notes.end(), note);
-    if (it != notes.end()) {
-        notes.erase(it);
-
-        // Rimuove anche dalla lista delle note importanti, se presente
-        importantNotes.remove(note);
-
-        notifyObservers();
-        std::cout << "Nota rimossa con successo" << std::endl;
-        return true;
-    }
-
-    std::cout << "Nota non trovata" << std::endl;
-    return false;
+    return results;
 }
 
 std::list<Observer *> Collection::getObservers() {
     return observers;
+}
+
+int Collection::getImportantNoteCount() const {
+    return importantNotes.size();
+}
+
+std::shared_ptr<Note> Collection::getImportantNotes(int i) {
+    if (i < 0 || i >= importantNotes.size()) {
+        return nullptr;
+    }
+
+    auto it = importantNotes.begin();
+    std::advance(it, i);
+    return *it;
+}
+
+bool Collection::updateNoteTitle(int index, bool important, const std::string &newTitle) {
+    if(newTitle.empty()) {
+        throw std::invalid_argument("Il nuovo titolo non può essere vuoto");
+    }
+    for(const auto& note : notes) {
+        if(note->getTitle() == newTitle) {
+            std::cout << "Nota con lo stesso titolo già presente" << std::endl;
+            return false;
+        }
+    }
+    for(const auto& note : importantNotes) {
+        if(note->getTitle() == newTitle) {
+            std::cout << "Nota con lo stesso titolo già presente" << std::endl;
+            return false;
+        }
+    }
+    if (important) {
+        if (index < 0 || index > importantNotes.size()) {
+            std::cout << "Nota non valida" << std::endl;
+            return false;
+        }
+        auto it = std::next(importantNotes.begin(), index);
+        if ((*it)->getLock()) {
+            std::cout << "Nota bloccata, impossibile modificare" << std::endl;
+            return false;
+        }
+
+        (*it)->setTitle(newTitle);
+        std::cout << "Titolo nota modificato con successo" << std::endl;
+        return true;
+    } else {
+        if (index < 0 || index >= notes.size()) {
+            std::cout << "Nota non valida" << std::endl;
+            return false;
+        }
+        auto it = std::next(notes.begin(), index);
+        if ((*it)->getLock()) {
+            std::cout << "Nota bloccata, impossibile modificare" << std::endl;
+            return false;
+        }
+
+        (*it)->setTitle(newTitle);
+        std::cout << "Titolo nota modificato con successo" << std::endl;
+        return true;
+    }
+}
+
+bool Collection::updateNoteText(int index, bool important, const std::string &newText) {
+    if(newText.empty()) {
+        throw std::invalid_argument("Il nuovo testo non può essere vuoto");
+    }
+    if (important) {
+        if (index < 0 || index > importantNotes.size()) {
+            std::cout << "Nota non valida" << std::endl;
+            return false;
+        }
+        auto it = std::next(importantNotes.begin(), index);
+        if ((*it)->getLock()) {
+            std::cout << "Nota bloccata, impossibile modificare" << std::endl;
+            return false;
+        }
+
+        (*it)->setBody(newText);
+        std::cout << "Testo nota modificato con successo" << std::endl;
+        return true;
+
+    } else {
+        if (index < 0 || index >= notes.size()) {
+            std::cout << "Nota non valida" << std::endl;
+            return false;
+        }
+        auto it = std::next(notes.begin(), index);
+        if ((*it)->getLock()) {
+            std::cout << "Nota bloccata, impossibile modificare" << std::endl;
+            return false;
+        }
+
+        (*it)->setBody(newText);
+        std::cout << "Testo nota modificato con successo" << std::endl;
+        return true;
+    }
+}
+
+bool Collection::updateNoteImportant(int index, bool important, bool newImportant) {
+    if (important && !newImportant) {
+            if (index < 0 || index > importantNotes.size()) {
+                std::cout << "Nota non valida" << std::endl;
+                return false;
+            }
+            auto it = std::next(importantNotes.begin(), index);
+            if ((*it)->getLock()) {
+                std::cout << "Nota bloccata, impossibile modificare" << std::endl;
+                return false;
+            }
+            getImportantNotes(index)->setImportant(newImportant);
+            notes.push_back(std::move(*it));
+            importantNotes.erase(it);
+            std::cout << "Attributo importante della nota modificato con successo" << std::endl;
+            return true;
+
+    } else if(newImportant){
+            if (index < 0 || index >= notes.size()) {
+                std::cout << "Nota non valida" << std::endl;
+                return false;
+            }
+            auto it = std::next(notes.begin(), index);
+            if ((*it)->getLock()) {
+                std::cout << "Nota bloccata, impossibile modificare" << std::endl;
+                return false;
+            }
+        getNotes(index)->setImportant(newImportant);
+        importantNotes.push_back(std::move(*it));
+        notes.erase(it);
+        std::cout << "Attributo importante della nota modificato con successo" << std::endl;
+        return true;
+    }
 }

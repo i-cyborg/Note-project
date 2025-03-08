@@ -17,20 +17,23 @@ class Collection: public Subject {
 public:
     explicit Collection(const std::string& n);
 
-    void addNote();
-    void addNote(const std::shared_ptr<Note>& note);
-    bool removeNote();
-    bool removeNote(const std::shared_ptr<Note>& note);
+    bool addNote(const std::string& titolo, const std::string& testo, bool blocco, bool importante);
+    bool removeNote(int index, bool important);
 
     std::string getName() const;
-    //restituisce l' i-esimo elemento del vettore notes
+    //restituisce l' i-esimo elemento della lista notes
     std::shared_ptr<Note> getNotes(int i);
+    std::shared_ptr<Note> getImportantNotes(int i);
     std::list<Observer*> getObservers();
-    int getNoteCount();
-    bool updateNote();
-    void printNotes() const;
+    int getNoteCount() const;
+    int getImportantNoteCount() const;
+
+    bool updateNoteTitle(int index, bool important, const std::string& newTitle);
+    bool updateNoteText(int index, bool important, const std::string& newText);
+    bool updateNoteImportant(int index, bool important, bool newImportant);
+
     std::shared_ptr<Note> searchByTitle(const std::string& title);
-    std::shared_ptr<Note> searchByText(const std::string& text);
+    std::list<std::shared_ptr<Note>> searchByText(const std::string& text);
 
     virtual void registerObserver(Observer* observer) override;
     virtual void removeObserver(Observer* observer) override;
