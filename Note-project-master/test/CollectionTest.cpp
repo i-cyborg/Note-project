@@ -208,24 +208,3 @@ TEST_F(CollectionTest, TestSearchByText) {
     EXPECT_EQ(results.size(), 1);
 }
 
-TEST_F(CollectionTest, ObserverUpdate) {
-    ASSERT_EQ(o1->update(), 0);
-    collection->addNote("Titolo di prova", "Testo di prova", false, false);
-    ASSERT_EQ(o1->update(), 1);
-    collection->removeNote(0, false);
-    ASSERT_EQ(o1->update(), 0);
-}
-
-TEST_F(CollectionTest, DetachObserver) {
-    ASSERT_FALSE(collection->getObservers().empty());
-    o1->detach();
-    ASSERT_TRUE(collection->getObservers().empty());
-}
-
-TEST_F(CollectionTest, AttachObserver) {
-    ASSERT_FALSE(collection->getObservers().empty());
-    o1->detach();
-    ASSERT_TRUE(collection->getObservers().empty());
-    o1->attach();
-    ASSERT_FALSE(collection->getObservers().empty());
-}

@@ -17,7 +17,7 @@ public:
     virtual int update() override;
     virtual void attach() override;
     virtual void detach() override;
-
+//mostra a schermo il numero di note
     void showNoteCount() const;
 
 private:
