@@ -24,8 +24,8 @@ target_link_libraries(note PRIVATE note_lib)
 
 add_executable(note_tests test/CollectionTest.cpp
         test/NoteTest.cpp
-        test/runAllTests.cpp
-        test/ObserverTest.cpp)
+        test/ObserverTest.cpp
+)
 target_link_libraries(note_tests PRIVATE note_lib gtest gtest_main)
 
 target_include_directories(note_tests PRIVATE ${googletest_SOURCE_DIR}/googletest/include)

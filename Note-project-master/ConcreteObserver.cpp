@@ -14,13 +14,11 @@ ConcreteObserver::~ConcreteObserver() {
     detach();
 }
 
-int ConcreteObserver::update() {
+void ConcreteObserver::update() {
     if (subject) {
         noteCount = subject->getNoteCount() + subject->getImportantNoteCount();
         showNoteCount();
-        return noteCount;
     }
-    return 0;
 }
 
 void ConcreteObserver::attach() {
@@ -37,4 +35,8 @@ void ConcreteObserver::detach() {
 
 void ConcreteObserver::showNoteCount() const {
     std::cout << "Numero di note nella collezione: " << noteCount << std::endl;
+}
+
+int ConcreteObserver::getNoteCount() const {
+    return noteCount;
 }

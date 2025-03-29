@@ -81,9 +81,9 @@ TEST_F(CollectionTest, TestGetNotes) {
     std::shared_ptr<Note> note = collection->getNotes(1);
     EXPECT_EQ(note->getTitle(), "Titolo 2");
     EXPECT_EQ(note->getBody(), "Testo 2");
-    note = collection->getNotes(-1);
+    note = collection->getNotes(-10);
     EXPECT_EQ(note, nullptr);
-    note = collection->getNotes(5);
+    note = collection->getNotes(100000);
     EXPECT_EQ(note, nullptr);
 }
 
@@ -95,9 +95,9 @@ TEST_F(CollectionTest, TestGetImportantNotes) {
     std::shared_ptr<Note> note = collection->getImportantNotes(1);
     EXPECT_EQ(note->getTitle(), "Titolo 2");
     EXPECT_EQ(note->getBody(), "Testo 2");
-    note = collection->getImportantNotes(-1);
+    note = collection->getImportantNotes(-12);
     EXPECT_EQ(note, nullptr);
-    note = collection->getImportantNotes(5);
+    note = collection->getImportantNotes(100000);
     EXPECT_EQ(note, nullptr);
 }
 

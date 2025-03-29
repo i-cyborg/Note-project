@@ -14,11 +14,12 @@ public:
     explicit ConcreteObserver(Collection* c);
     virtual ~ConcreteObserver();
 
-    virtual int update() override;
+    virtual void update() override;
     virtual void attach() override;
     virtual void detach() override;
 //mostra a schermo il numero di note
     void showNoteCount() const;
+    int getNoteCount() const;
 
 private:
     int noteCount = 0;

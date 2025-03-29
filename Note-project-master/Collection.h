@@ -22,9 +22,9 @@ public:
 
     std::string getName() const;
     //restituisce l' i-esimo elemento della lista notes
-    std::shared_ptr<Note> getNotes(int i);
-    std::shared_ptr<Note> getImportantNotes(int i);
-    std::list<Observer*> getObservers();
+    std::shared_ptr<Note> getNotes(int i) const;
+    std::shared_ptr<Note> getImportantNotes(int i) const;
+    std::list<Observer*> getObservers() const;
     int getNoteCount() const;
     int getImportantNoteCount() const;
 
@@ -32,8 +32,8 @@ public:
     bool updateNoteText(int index, bool important, const std::string& newText);
     bool updateNoteImportant(int index, bool important, bool newImportant);
 
-    std::shared_ptr<Note> searchByTitle(const std::string& title);
-    std::list<std::shared_ptr<Note>> searchByText(const std::string& text);
+    std::shared_ptr<Note> searchByTitle(const std::string& title) const;
+    std::list<std::shared_ptr<Note>> searchByText(const std::string& text) const;
 
     virtual void registerObserver(Observer* observer) override;
     virtual void removeObserver(Observer* observer) override;

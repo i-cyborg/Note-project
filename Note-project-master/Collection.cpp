@@ -84,7 +84,7 @@ std::string Collection::getName() const {
     return name;
 }
 
-std::shared_ptr<Note> Collection::getNotes(const int i) {
+std::shared_ptr<Note> Collection::getNotes(const int i) const {
     if (i < 0 || i >= notes.size()) {
         return nullptr;
     }
@@ -112,7 +112,7 @@ int Collection::getNoteCount() const {
     return notes.size();
 }
 
-std::shared_ptr<Note> Collection::searchByTitle(const std::string &title) {
+std::shared_ptr<Note> Collection::searchByTitle(const std::string &title) const {
     for(const auto& note : notes) {
         if(note->getTitle() == title) {
             std::cout << "Nota trovata" << std::endl;
@@ -133,7 +133,7 @@ std::shared_ptr<Note> Collection::searchByTitle(const std::string &title) {
     return nullptr;
 }
 
-std::list<std::shared_ptr<Note>> Collection::searchByText(const std::string &text) {
+std::list<std::shared_ptr<Note>> Collection::searchByText(const std::string &text) const {
     std::list<std::shared_ptr<Note>> results;
     for (const auto& note : notes) {
         if (note->getBody() == text) {
@@ -148,7 +148,7 @@ std::list<std::shared_ptr<Note>> Collection::searchByText(const std::string &tex
     return results;
 }
 
-std::list<Observer *> Collection::getObservers() {
+std::list<Observer *> Collection::getObservers() const {
     return observers;
 }
 
@@ -156,7 +156,7 @@ int Collection::getImportantNoteCount() const {
     return importantNotes.size();
 }
 
-std::shared_ptr<Note> Collection::getImportantNotes(int i) {
+std::shared_ptr<Note> Collection::getImportantNotes(int i) const {
     if (i < 0 || i >= importantNotes.size()) {
         return nullptr;
     }
@@ -251,35 +251,36 @@ bool Collection::updateNoteText(int index, bool important, const std::string &ne
 
 bool Collection::updateNoteImportant(int index, bool important, bool newImportant) {
     if (important && !newImportant) {
-            if (index < 0 || index > importantNotes.size()) {
-                std::cout << "Nota non valida" << std::endl;
-                return false;
-            }
-            auto it = std::next(importantNotes.begin(), index);
-            if ((*it)->getLock()) {
-                std::cout << "Nota bloccata, impossibile modificare" << std::endl;
-                return false;
-            }
-            getImportantNotes(index)->setImportant(newImportant);
-            notes.push_back(std::move(*it));
-            importantNotes.erase(it);
-            std::cout << "Attributo importante della nota modificato con successo" << std::endl;
-            return true;
+        if (index < 0 || index > importantNotes.size()) {
+            std::cout << "Nota non valida" << std::endl;
+            return false;
+        }
+        auto it = std::next(importantNotes.begin(), index);
+        if ((*it)->getLock()) {
+            std::cout << "Nota bloccata, impossibile modificare" << std::endl;
+            return false;
+        }
+        getImportantNotes(index)->setImportant(newImportant);
+        notes.push_back(std::move(*it));
+        importantNotes.erase(it);
+        std::cout << "Attributo importante della nota modificato con successo" << std::endl;
+        return true;
 
-    } else if(newImportant){
-            if (index < 0 || index >= notes.size()) {
-                std::cout << "Nota non valida" << std::endl;
-                return false;
-            }
-            auto it = std::next(notes.begin(), index);
-            if ((*it)->getLock()) {
-                std::cout << "Nota bloccata, impossibile modificare" << std::endl;
-                return false;
-            }
+    } else if (!important && newImportant) {
+        if (index < 0 || index >= notes.size()) {
+            std::cout << "Nota non valida" << std::endl;
+            return false;
+        }
+        auto it = std::next(notes.begin(), index);
+        if ((*it)->getLock()) {
+            std::cout << "Nota bloccata, impossibile modificare" << std::endl;
+            return false;
+        }
         getNotes(index)->setImportant(newImportant);
         importantNotes.push_back(std::move(*it));
         notes.erase(it);
         std::cout << "Attributo importante della nota modificato con successo" << std::endl;
         return true;
     }
+    return false;
 }
