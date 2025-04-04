@@ -33,3 +33,12 @@ target_include_directories(note_tests PRIVATE ${googletest_SOURCE_DIR}/googletes
 enable_testing()
 include(GoogleTest)
 gtest_discover_tests(note_tests)
+add_executable(runAllTests
+        test/runAllTests.cpp
+        test/CollectionTest.cpp
+        test/NoteTest.cpp
+        test/ObserverTest.cpp
+)
+target_link_libraries(runAllTests PRIVATE note_lib gtest gtest_main)
+
+target_include_directories(runAllTests PRIVATE ${googletest_SOURCE_DIR}/googletest/include)
